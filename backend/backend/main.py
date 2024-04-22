@@ -1,9 +1,19 @@
 from fastapi import FastAPI, Response
+from fastapi.middleware.cors import CORSMiddleware
 from backend.utils.data_processor import load_data
 from fastapi.responses import JSONResponse
 import numpy as np
 
 app = FastAPI()
+
+# Allow all domains during development
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # For production, specify your frontend's domain instead of '*'
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/data", response_class=JSONResponse)
 async def read_data():
