@@ -1,7 +1,7 @@
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Response, Query
 from fastapi.middleware.cors import CORSMiddleware
-from backend.utils.data_processor import load_data
 from fastapi.responses import JSONResponse
+import pandas as pd
 import numpy as np
 
 app = FastAPI()
@@ -15,12 +15,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def load_data(file_path: str):
+    try:
+        # Load the dataset with pandas
+        df = pd.read_csv(file_path)
+        return df
+    except Exception as e:
+        print(f"Error loading the data: {e}")
+        return None
+
 @app.get("/data", response_class=JSONResponse)
-async def read_data():
+async def read_data(name: str = Query(None), genre: str = Query(None), platform: str = Query(None), year: str = Query(None), publisher: str = Query(None), page: int = Query(1, ge=1),
+    page_size: int = Query(25, ge=1),):
     data = load_data("./videogamesales.csv")
     if data is not None:
-        # Convert DataFrame to JSON, replacing NaN with None
-        json_compatible_data = data.loc[:25].replace({np.nan: None}).to_dict(orient='records')
-        return json_compatible_data
+        # Filter data based on query parameters
+        if name:
+            data = data[data['Name'].str.contains(name, case=False, na=False)]
+        if genre:
+            data = data[data['Genre'].str.contains(genre, case=False, na=False)]
+        if platform:
+            data = data[data['Platform'].str.contains(platform, case=False, na=False)]
+        if year:
+            data = data[data['Year'].astype(str).str.contains(year, case=False, na=False)]   
+        if publisher:
+            data = data[data['Publisher'].str.contains(publisher, case=False, na=False)]       
+        start_index = (page - 1) * page_size
+        end_index = start_index + page_size
+        paginated_data = data.iloc[start_index:end_index].replace({np.nan: None}).to_dict(orient='records')
+        return paginated_data
     else:
         return Response(content="Failed to load data", status_code=400, media_type='text/plain')
