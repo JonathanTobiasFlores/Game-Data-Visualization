@@ -55,7 +55,7 @@ function App() {
       setError(error.message);
       setLoading(false);
     }
-  }, [searchTerm, genre, platform, year, publisher]);  // Dependencies of fetchData
+  }, [searchTerm, genre, platform, year, publisher, page, pageSize]);  // Dependencies of fetchData
 
   useEffect(() => {
     fetchData();
