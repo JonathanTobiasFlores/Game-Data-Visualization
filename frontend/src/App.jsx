@@ -31,6 +31,8 @@ function App() {
   const [publisher, setPublisher] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [totalPages, setTotalPages] = useState(0);
+
   
   const fetchData = useCallback(async () => {
     const params = new URLSearchParams({
@@ -45,17 +47,18 @@ function App() {
     try {
       const apiUrl = import.meta.env.VITE_API_URL;
       const response = await fetch(`${apiUrl}/data?${params}`);
-            if (!response.ok) {
+      if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data = await response.json();
-      setChartData(transformDataToChartData(data));
+      const result = await response.json();
+      setChartData(transformDataToChartData(result.data)); // result.data is the array of items
+      setTotalPages(Math.ceil(result.total / pageSize)); // result.total is the total count of items
       setLoading(false);
     } catch (error) {
       setError(error.message);
       setLoading(false);
     }
-  }, [searchTerm, genre, platform, year, publisher, page, pageSize]);  // Dependencies of fetchData
+  }, [searchTerm, genre, platform, year, publisher, page, pageSize]);
 
   useEffect(() => {
     fetchData();
@@ -138,13 +141,13 @@ function App() {
         />
       </div>
       <div>
-        <label>Page Size:</label>
-        <input
-          type="number"
-          value={pageSize}
-          onChange={handlePageSizeChange}
-          min={1}
-        />
+      <label>Page Size:</label>
+      <input
+        type="number"
+        value={pageSize}
+        onChange={handlePageSizeChange}
+        min={1}
+      />
       </div>
       {loading ? (
         <p>Loading...</p>
@@ -152,13 +155,20 @@ function App() {
         <p>Error: {error}</p>
       ) : (
         <>
-        <Bar data={chartData} />
+         <Bar data={chartData} />
         <div>
-          <button onClick={() => handlePageChange(page - 1)} disabled={page === 1}>
-            Previous Page
+          <button onClick={() => handlePageChange(1)} disabled={page <= 1}>
+            First
           </button>
-          <button onClick={() => handlePageChange(page + 1)}>
-            Next Page
+          <button onClick={() => handlePageChange(page - 1)} disabled={page <= 1}>
+            Previous
+          </button>
+          Page {page} of {totalPages}
+          <button onClick={() => handlePageChange(page + 1)} disabled={page >= totalPages}>
+            Next
+          </button>
+          <button onClick={() => handlePageChange(totalPages)} disabled={page >= totalPages}>
+            Last
           </button>
         </div>
       </>
