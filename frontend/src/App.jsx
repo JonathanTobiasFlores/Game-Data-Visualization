@@ -31,7 +31,6 @@ function App() {
   const [publisher, setPublisher] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-
   
   const fetchData = useCallback(async () => {
     const params = new URLSearchParams({
@@ -44,8 +43,9 @@ function App() {
       page_size: pageSize.toString(),
     });
     try {
-      const response = await fetch(`http://localhost:8000/data?${params}`);
-      if (!response.ok) {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${apiUrl}/data?${params}`);
+            if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
@@ -86,7 +86,7 @@ function App() {
   };
 
   const handlePageSizeChange = (event) => {
-    setPageSize(parseInt(event.target.value)); // Parse to integer
+    setPageSize(parseInt(event.target.value));
   };
 
   const transformDataToChartData = (data) => {
@@ -104,7 +104,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Data Visualization with React and Chart.js</h1>
+      <h1>Data Visualization on Video Game Sales</h1>
       <div>
         <input
           type="text"
@@ -143,7 +143,7 @@ function App() {
           type="number"
           value={pageSize}
           onChange={handlePageSizeChange}
-          min={1} // Minimum page size
+          min={1}
         />
       </div>
       {loading ? (

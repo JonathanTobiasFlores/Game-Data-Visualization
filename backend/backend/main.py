@@ -9,7 +9,7 @@ app = FastAPI()
 # Allow all domains during development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For production, specify your frontend's domain instead of '*'
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
