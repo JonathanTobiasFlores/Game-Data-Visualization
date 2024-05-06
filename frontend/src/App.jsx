@@ -1,5 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
+import useChartData from './hooks/useChartData';
+import SearchInput from './components/SearchInput';
+import Pagination from './components/Pagination';
+import './App.css';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,7 +13,6 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
-import './App.css';
 
 ChartJS.register(
   CategoryScale,
@@ -21,9 +24,6 @@ ChartJS.register(
 );
 
 function App() {
-  const [chartData, setChartData] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [genre, setGenre] = useState('');
   const [platform, setPlatform] = useState('');
@@ -31,123 +31,38 @@ function App() {
   const [publisher, setPublisher] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const [totalPages, setTotalPages] = useState(0);
+  const { chartData, loading, error, totalPages, fetchData } = useChartData();
 
-  
-  const fetchData = useCallback(async () => {
+  useEffect(() => {
     const params = new URLSearchParams({
       name: searchTerm,
       genre: genre,
       platform: platform,
-      year: year,         
+      year: year,
       publisher: publisher,
       page: page.toString(),
       page_size: pageSize.toString(),
     });
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL;
-      const response = await fetch(`${apiUrl}/data?${params}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const result = await response.json();
-      setChartData(transformDataToChartData(result.data)); // result.data is the array of items
-      setTotalPages(Math.ceil(result.total / pageSize)); // result.total is the total count of items
-      setLoading(false);
-    } catch (error) {
-      setError(error.message);
-      setLoading(false);
-    }
-  }, [searchTerm, genre, platform, year, publisher, page, pageSize]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);  // Depend only on fetchData, which itself depends on the search parameters
-
-  const handleNameSearch = (event) => {
-    setSearchTerm(event.target.value);
-  };
-
-  const handleGenreSearch = (event) => {
-    setGenre(event.target.value);
-  };
-
-  const handlePlatformSearch = (event) => {
-    setPlatform(event.target.value);
-  };
-
-  const handleYearSearch = (event) => {
-    setYear(event.target.value);
-  };
-
-  const handlePublisherSearch = (event) => {
-    setPublisher(event.target.value);
-  };
-
-  const handlePageChange = (newPage) => {
-    setPage(newPage);
-  };
-
-  const handlePageSizeChange = (event) => {
-    setPageSize(parseInt(event.target.value));
-  };
-
-  const transformDataToChartData = (data) => {
-    return {
-      labels: data.map(item => item.Name),
-      datasets: [
-        {
-          label: 'Global Sales',
-          data: data.map(item => item.Global_Sales),
-          backgroundColor: 'rgba(53, 162, 235, 0.5)',
-        },
-      ],
-    };
-  };
+    fetchData(params);
+  }, [searchTerm, genre, platform, year, publisher, page, pageSize, fetchData]);
 
   return (
     <div className="App">
       <h1>Data Visualization on Video Game Sales</h1>
+      <SearchInput value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search Games by Name" />
+      <SearchInput value={genre} onChange={e => setGenre(e.target.value)} placeholder="Search Games by Genre" />
+      <SearchInput value={platform} onChange={e => setPlatform(e.target.value)} placeholder="Search Games by Platform" />
+      <SearchInput value={year} onChange={e => setYear(e.target.value)} placeholder="Search Games by Year" />
+      <SearchInput value={publisher} onChange={e => setPublisher(e.target.value)} placeholder="Search Games by Publisher" />
       <div>
+        <label>Page Size: </label>
         <input
-          type="text"
-          placeholder="Search Games by Name"
-          value={searchTerm}
-          onChange={handleNameSearch}
+          type="number"
+          value={pageSize}
+          onChange={(e) => setPageSize(parseInt(e.target.value))}
+          min={1}
+          style={{ width: '60px' }}
         />
-        <input
-          type="text"
-          placeholder="Search Games by Genre"
-          value={genre}
-          onChange={handleGenreSearch}
-        />
-        <input
-          type="text"
-          placeholder="Search Games by Platform"
-          value={platform}
-          onChange={handlePlatformSearch}
-        />
-        <input
-          type="text"
-          placeholder="Search Games by Year"
-          value={year}
-          onChange={handleYearSearch}
-        />
-        <input
-          type="text"
-          placeholder="Search Games by Publisher"
-          value={publisher}
-          onChange={handlePublisherSearch}
-        />
-      </div>
-      <div>
-      <label>Page Size:</label>
-      <input
-        type="number"
-        value={pageSize}
-        onChange={handlePageSizeChange}
-        min={1}
-      />
       </div>
       {loading ? (
         <p>Loading...</p>
@@ -155,23 +70,9 @@ function App() {
         <p>Error: {error}</p>
       ) : (
         <>
-         <Bar data={chartData} />
-        <div>
-          <button onClick={() => handlePageChange(1)} disabled={page <= 1}>
-            First
-          </button>
-          <button onClick={() => handlePageChange(page - 1)} disabled={page <= 1}>
-            Previous
-          </button>
-          Page {page} of {totalPages}
-          <button onClick={() => handlePageChange(page + 1)} disabled={page >= totalPages}>
-            Next
-          </button>
-          <button onClick={() => handlePageChange(totalPages)} disabled={page >= totalPages}>
-            Last
-          </button>
-        </div>
-      </>
+          <Bar data={chartData} />
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+        </>
       )}
     </div>
   );
