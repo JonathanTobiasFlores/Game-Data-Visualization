@@ -12,7 +12,7 @@ const useChartData = () => {
     return {
       labels: data.map(item => item.Name),
       datasets: [{
-        label: 'Global Sales',
+        label: 'Global sales in millions',
         data: data.map(item => item.Global_Sales),
         backgroundColor: 'rgba(53, 162, 235, 0.5)',
         borderColor: 'rgba(53, 162, 235, 1)',
