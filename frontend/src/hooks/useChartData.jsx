@@ -1,12 +1,13 @@
 import { useState, useCallback } from 'react';
 
+// Custom hook for fetching and transforming chart data
 const useChartData = () => {
   const [chartData, setChartData] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
 
-  
+  // Function to transform raw data into chart format
   const transformDataToChartData = (data) => {
     return {
       labels: data.map(item => item.Name),
@@ -20,6 +21,7 @@ const useChartData = () => {
     };
   };
 
+  // Using the useCallback to memoize the fetchData function to avoid unnecessary re-renders
   const fetchData = useCallback(async (params) => {
     try {
       const response = await fetch(`http://localhost:8000/data?${params}`);
@@ -36,6 +38,7 @@ const useChartData = () => {
     }
   }, []);
 
+  // Returning the states and fetchData function from the hook
   return { chartData, loading, error, totalPages, fetchData };
 };
 

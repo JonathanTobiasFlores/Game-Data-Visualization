@@ -1,4 +1,6 @@
 /* eslint-disable react/prop-types */
+
+// Defines a reusable Pagination component that displays navigation buttons for page navigation.
 const Pagination = ({ page, totalPages, onPageChange }) => (
     <div>
       <button onClick={() => onPageChange(1)} disabled={page <= 1}>First</button>
