@@ -26,9 +26,6 @@ The chosen technologies offer several benefits, including ease of development, s
 4. Interact with the pagination buttons to navigate through the search results.
 5. Explore the interactive bar chart to visualize global sales data of the displayed video games.
 
-## Link to the Deployed Application
-[Video Game Sales Data Visualization](https://cscloud8-58.lnu.se/wt2/)
-
 ## Additional features
 - Implemented dynamic pagination based on the total number of search results.
 - Added validation on the server side to handle search queries and prevent network errors.
